@@ -152,13 +152,21 @@ class RepoManager:
         logger.info("Cloning %s into %s", self.url, self.root)
         start = time.time()
         try:
-            self._repo = git.Repo.clone_from(
-                self.url,
-                self.root,
-                depth=50,  # shallow clone for speed
+            subprocess.run(
+                [
+                    "git",
+                    "clone",
+                    "--depth=50",  # shallow clone for speed
+                    self.url,
+                    str(self.root),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
                 timeout=CLONE_TIMEOUT,
             )
-        except git.GitCommandError as exc:
+            self._repo = git.Repo(self.root)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
             self._tmpdir.cleanup()
             raise RuntimeError(f"Failed to clone {self.url}: {exc}") from exc
         elapsed = time.time() - start

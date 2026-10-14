@@ -15,10 +15,11 @@ Tests cover:
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-from tools import ToolExecutor, _scrub_line
+from tools import RepoManager, ToolExecutor, _scrub_line
 
 # ============================================================
 # Fixtures
@@ -215,6 +216,20 @@ class TestSearchCode:
 # ============================================================
 # git_log tests
 # ============================================================
+
+
+class TestRepoManager:
+    def test_clone_uses_supported_git_timeout(self, tmp_path: Path) -> None:
+        completed = type("Completed", (), {})()
+        with patch("tools.subprocess.run", return_value=completed) as run_mock:
+            with patch("tools.git.Repo") as repo_mock:
+                with RepoManager("https://github.com/example/repo") as manager:
+                    assert manager.root is not None
+
+        clone_args = run_mock.call_args.args[0]
+        assert clone_args[:3] == ["git", "clone", "--depth=50"]
+        assert run_mock.call_args.kwargs["timeout"] == 120
+        repo_mock.assert_called_once()
 
 
 class TestGitLog:
