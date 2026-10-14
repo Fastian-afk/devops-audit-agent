@@ -1,6 +1,6 @@
 # 🔍 DevOps Repository Auditing Agent
 
-[![CI](https://github.com/YOUR_USERNAME/devops-audit-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/devops-audit-agent/actions/workflows/ci.yml)
+[![CI](https://github.com/Fastian-afk/devops-audit-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Fastian-afk/devops-audit-agent/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -48,7 +48,7 @@ This project implements a **production-grade Autonomous DevOps Repository Auditi
 
 ```bash
 # 1. Clone this repository
-git clone https://github.com/YOUR_USERNAME/devops-audit-agent.git
+git clone https://github.com/Fastian-afk/devops-audit-agent.git
 cd devops-audit-agent
 
 # 2. Create and activate a virtual environment
@@ -562,7 +562,7 @@ All tests use **mocked LLM responses** — zero real API calls. The test suite p
 As required by the assignment specification, this repository has been audited against itself:
 
 ```bash
-python agent.py --repo https://github.com/YOUR_USERNAME/devops-audit-agent --output self_audit.json
+python agent.py --repo https://github.com/Fastian-afk/devops-audit-agent --output self_audit.json
 ```
 
 **Result: `"violations": []`**
