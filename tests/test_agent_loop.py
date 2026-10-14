@@ -68,10 +68,12 @@ def _make_tool_call(tool_name: str, args: dict | None = None) -> tuple[str, list
 class TestAgentLoopBasic:
     def test_loop_completes_with_final_report(self, tmp_path: Path) -> None:
         """The loop should terminate when submit_final_report is called."""
-        mock_llm = _make_mock_llm([
-            _make_tool_call("list_files"),
-            _make_final_report_call(),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                _make_tool_call("list_files"),
+                _make_final_report_call(),
+            ]
+        )
 
         mock_tool = MagicMock(return_value={"entries": [], "total_files": 0})
 
@@ -99,9 +101,11 @@ class TestAgentLoopBasic:
             "evidence": "Secret value [REDACTED_SECRET_DETECTED]",
             "recommendation": "Use environment variables",
         }
-        mock_llm = _make_mock_llm([
-            _make_final_report_call(violations=[violation]),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                _make_final_report_call(violations=[violation]),
+            ]
+        )
 
         loop = AgentLoop(
             llm_client=mock_llm,
@@ -117,9 +121,11 @@ class TestAgentLoopBasic:
 
     def test_empty_violations_on_clean_repo(self, tmp_path: Path) -> None:
         """A clean repo should produce empty violations list."""
-        mock_llm = _make_mock_llm([
-            _make_final_report_call(violations=[]),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                _make_final_report_call(violations=[]),
+            ]
+        )
 
         loop = AgentLoop(
             llm_client=mock_llm,
@@ -147,12 +153,14 @@ class TestToolDeduplication:
             call_count[0] += 1
             return {"entries": [], "total_files": 0}
 
-        mock_llm = _make_mock_llm([
-            # Call list_files twice with same args
-            _make_tool_call("list_files", {}),
-            _make_tool_call("list_files", {}),
-            _make_final_report_call(),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                # Call list_files twice with same args
+                _make_tool_call("list_files", {}),
+                _make_tool_call("list_files", {}),
+                _make_final_report_call(),
+            ]
+        )
 
         loop = AgentLoop(
             llm_client=mock_llm,
@@ -174,11 +182,13 @@ class TestToolDeduplication:
             call_count[0] += 1
             return {"content": "line", "total_lines": 1}
 
-        mock_llm = _make_mock_llm([
-            _make_tool_call("read_file", {"path": "README.md"}),
-            _make_tool_call("read_file", {"path": "requirements.txt"}),
-            _make_final_report_call(),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                _make_tool_call("read_file", {"path": "README.md"}),
+                _make_tool_call("read_file", {"path": "requirements.txt"}),
+                _make_final_report_call(),
+            ]
+        )
 
         loop = AgentLoop(
             llm_client=mock_llm,
@@ -200,13 +210,16 @@ class TestToolDeduplication:
 class TestErrorRecovery:
     def test_tool_error_does_not_crash_loop(self, tmp_path: Path) -> None:
         """A tool execution error should not crash the loop."""
+
         def failing_tool(name: str, kwargs: dict) -> dict:
             raise RuntimeError("Simulated tool failure")
 
-        mock_llm = _make_mock_llm([
-            _make_tool_call("list_files"),
-            _make_final_report_call(),
-        ])
+        mock_llm = _make_mock_llm(
+            [
+                _make_tool_call("list_files"),
+                _make_final_report_call(),
+            ]
+        )
 
         loop = AgentLoop(
             llm_client=mock_llm,
@@ -257,9 +270,7 @@ class TestMaxTurnsCap:
     def test_loop_terminates_at_max_turns(self, tmp_path: Path) -> None:
         """Loop should not run past max_turns even if LLM never submits report."""
         # LLM never calls submit_final_report — just keeps calling tools
-        infinite_responses = [
-            _make_tool_call("list_files") for _ in range(100)
-        ]
+        infinite_responses = [_make_tool_call("list_files") for _ in range(100)]
         # Final force-report response
         infinite_responses.append(_make_final_report_call())
 

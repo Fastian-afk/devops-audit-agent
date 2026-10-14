@@ -76,26 +76,36 @@ SUSPICIOUS_PATTERNS: list[str] = [
 # Secret detection patterns (for in-file scanning)
 _SECRET_REGEXES: list[tuple[str, re.Pattern]] = [
     ("AWS Access Key", re.compile(r"(?:AKIA|ASIA|AROA|ANPA|ANVA|AIDA)[A-Z0-9]{16}")),
-    ("Generic API Key", re.compile(
-        r"(?i)(?:api[_-]?key|apikey|api[_-]?secret)\s*[:=]\s*['\"]?([A-Za-z0-9/+_\-]{16,})['\"]?",
-        re.MULTILINE,
-    )),
+    (
+        "Generic API Key",
+        re.compile(
+            r"(?i)(?:api[_-]?key|apikey|api[_-]?secret)\s*[:=]\s*['\"]?([A-Za-z0-9/+_\-]{16,})['\"]?",
+            re.MULTILINE,
+        ),
+    ),
     ("GitHub Token", re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}")),
     ("Slack Token", re.compile(r"xox[baprs]-[0-9A-Za-z\-]{10,}")),
-    ("Private Key Block", re.compile(
-        r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
-    )),
-    ("Generic Secret Assignment", re.compile(
-        r"(?i)(?:password|passwd|secret|token|credential)\s*[:=]\s*['\"]([^'\"]{8,})['\"]",
-        re.MULTILINE,
-    )),
-    ("Connection String", re.compile(
-        r"(?:postgres|mysql|mongodb|redis)://[^:]+:[^@\s]+@",
-        re.IGNORECASE,
-    )),
-    ("Generic High-Entropy String", re.compile(
-        r"['\"][0-9a-fA-F]{40,}['\"]",  # 40+ hex chars
-    )),
+    ("Private Key Block", re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----")),
+    (
+        "Generic Secret Assignment",
+        re.compile(
+            r"(?i)(?:password|passwd|secret|token|credential)\s*[:=]\s*['\"]([^'\"]{8,})['\"]",
+            re.MULTILINE,
+        ),
+    ),
+    (
+        "Connection String",
+        re.compile(
+            r"(?:postgres|mysql|mongodb|redis)://[^:]+:[^@\s]+@",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "Generic High-Entropy String",
+        re.compile(
+            r"['\"][0-9a-fA-F]{40,}['\"]",  # 40+ hex chars
+        ),
+    ),
 ]
 
 _REDACTION = "[REDACTED_SECRET_DETECTED]"
@@ -209,9 +219,7 @@ class ToolExecutor:
         try:
             target.relative_to(self.root)
         except ValueError as exc:
-            raise PermissionError(
-                f"Path traversal attempt blocked: {rel_path!r}"
-            ) from exc
+            raise PermissionError(f"Path traversal attempt blocked: {rel_path!r}") from exc
         return target
 
     # ------------------------------------------------------------------
@@ -264,11 +272,13 @@ class ToolExecutor:
                     flagged.append(rel)
 
                 if child.is_dir():
-                    entries.append({
-                        "type": "dir",
-                        "path": rel,
-                        "suspicious": is_suspicious,
-                    })
+                    entries.append(
+                        {
+                            "type": "dir",
+                            "path": rel,
+                            "suspicious": is_suspicious,
+                        }
+                    )
                     _walk(child, depth + 1, prefix + "  ")
                 else:
                     total_files += 1
@@ -276,12 +286,14 @@ class ToolExecutor:
                         size = child.stat().st_size
                     except OSError:
                         size = -1
-                    entries.append({
-                        "type": "file",
-                        "path": rel,
-                        "size_bytes": size,
-                        "suspicious": is_suspicious,
-                    })
+                    entries.append(
+                        {
+                            "type": "file",
+                            "path": rel,
+                            "size_bytes": size,
+                            "suspicious": is_suspicious,
+                        }
+                    )
 
         _walk(target, 1)
 
@@ -412,11 +424,13 @@ class ToolExecutor:
                         if regex.search(line):
                             total_matches += 1
                             if total_matches <= MAX_MATCHES:
-                                matches.append({
-                                    "file": rel_path,
-                                    "line": lineno,
-                                    "content": _scrub_line(line.rstrip("\n")),
-                                })
+                                matches.append(
+                                    {
+                                        "file": rel_path,
+                                        "line": lineno,
+                                        "content": _scrub_line(line.rstrip("\n")),
+                                    }
+                                )
             except OSError:
                 continue
 
@@ -473,9 +487,7 @@ class ToolExecutor:
 
             # Check commit message for secrets
             if _secret_in_message_re.search(commit.message):
-                warning = (
-                    f"Commit {commit.hexsha[:8]} message may contain credential references"
-                )
+                warning = f"Commit {commit.hexsha[:8]} message may contain credential references"
                 warnings.append(warning)
                 commit_info["warning"] = warning
 
@@ -484,13 +496,10 @@ class ToolExecutor:
                 try:
                     stats = commit.stats.files
                     commit_info["files_changed"] = len(stats)
-                    sensitive_files = [
-                        f for f in stats if _sensitive_file_re.search(f)
-                    ]
+                    sensitive_files = [f for f in stats if _sensitive_file_re.search(f)]
                     if sensitive_files:
                         warning = (
-                            f"Commit {commit.hexsha[:8]} touched sensitive files: "
-                            f"{sensitive_files}"
+                            f"Commit {commit.hexsha[:8]} touched sensitive files: {sensitive_files}"
                         )
                         warnings.append(warning)
                         commit_info["sensitive_files"] = sensitive_files
@@ -513,8 +522,17 @@ class ToolExecutor:
         # Check if any .env or secret files appear in git history at all
         try:
             all_tracked = subprocess.run(
-                ["git", "log", "--all", "--full-history", "--", "**/.env", ".env",
-                 "*.pem", "*.key"],
+                [
+                    "git",
+                    "log",
+                    "--all",
+                    "--full-history",
+                    "--",
+                    "**/.env",
+                    ".env",
+                    "*.pem",
+                    "*.key",
+                ],
                 cwd=str(self.root),
                 capture_output=True,
                 text=True,
@@ -677,41 +695,49 @@ class ToolExecutor:
 
             # 1. Missing permissions block
             if "permissions" not in wf_data:
-                findings.append({
-                    "line": 1,
-                    "issue": "SEC-003: Missing top-level 'permissions' block",
-                    "detail": (
-                        "Without a permissions block, the workflow runs with default "
-                        "write permissions. Add 'permissions: read-all' or scope tightly."
-                    ),
-                    "rule_id": "SEC-003",
-                    "severity": "high",
-                })
+                findings.append(
+                    {
+                        "line": 1,
+                        "issue": "SEC-003: Missing top-level 'permissions' block",
+                        "detail": (
+                            "Without a permissions block, the workflow runs with default "
+                            "write permissions. Add 'permissions: read-all' or scope tightly."
+                        ),
+                        "rule_id": "SEC-003",
+                        "severity": "high",
+                    }
+                )
             elif wf_data.get("permissions") == "write-all":
                 ln = find_line("write-all")
-                findings.append({
-                    "line": ln,
-                    "issue": "SEC-003: Overly broad permissions: write-all",
-                    "detail": "Use least-privilege scoped permissions instead.",
-                    "rule_id": "SEC-003",
-                    "severity": "high",
-                })
+                findings.append(
+                    {
+                        "line": ln,
+                        "issue": "SEC-003: Overly broad permissions: write-all",
+                        "detail": "Use least-privilege scoped permissions instead.",
+                        "rule_id": "SEC-003",
+                        "severity": "high",
+                    }
+                )
 
             # 2. Check for unpinned actions (@main/@master/@latest)
-            _unpinned_re = re.compile(r"uses:\s*([^@\s]+@(?:main|master|latest|HEAD))", re.IGNORECASE)
+            _unpinned_re = re.compile(
+                r"uses:\s*([^@\s]+@(?:main|master|latest|HEAD))", re.IGNORECASE
+            )
             for i, line in enumerate(raw_lines, 1):
                 m = _unpinned_re.search(line)
                 if m:
-                    findings.append({
-                        "line": i,
-                        "issue": f"SEC-005: Unpinned action: {m.group(1)}",
-                        "detail": (
-                            "Pin actions to a specific commit SHA for supply-chain security. "
-                            "Replace '@main' with '@<commit-sha>'"
-                        ),
-                        "rule_id": "SEC-005",
-                        "severity": "high",
-                    })
+                    findings.append(
+                        {
+                            "line": i,
+                            "issue": f"SEC-005: Unpinned action: {m.group(1)}",
+                            "detail": (
+                                "Pin actions to a specific commit SHA for supply-chain security. "
+                                "Replace '@main' with '@<commit-sha>'"
+                            ),
+                            "rule_id": "SEC-005",
+                            "severity": "high",
+                        }
+                    )
 
             # 3. Script injection via github.event context
             _injection_re = re.compile(
@@ -721,33 +747,37 @@ class ToolExecutor:
             )
             for i, line in enumerate(raw_lines, 1):
                 if _injection_re.search(line):
-                    findings.append({
-                        "line": i,
-                        "issue": "SEC-003: Script injection via github.event context",
-                        "detail": (
-                            "User-controlled data from github.event in run: steps "
-                            "can lead to code injection. Use environment variables instead."
-                        ),
-                        "rule_id": "SEC-003",
-                        "severity": "high",
-                    })
+                    findings.append(
+                        {
+                            "line": i,
+                            "issue": "SEC-003: Script injection via github.event context",
+                            "detail": (
+                                "User-controlled data from github.event in run: steps "
+                                "can lead to code injection. Use environment variables instead."
+                            ),
+                            "rule_id": "SEC-003",
+                            "severity": "high",
+                        }
+                    )
 
             # 4. unsafe pull_request_target with checkout
             if "pull_request_target" in raw_content:
                 if "actions/checkout" in raw_content:
                     for i, line in enumerate(raw_lines, 1):
                         if "pull_request_target" in line:
-                            findings.append({
-                                "line": i,
-                                "issue": "SEC-004: Unsafe pull_request_target with checkout",
-                                "detail": (
-                                    "pull_request_target runs in the context of the base repo "
-                                    "with write permissions. Checking out untrusted PR code here "
-                                    "is a known privilege escalation vector."
-                                ),
-                                "rule_id": "SEC-004",
-                                "severity": "high",
-                            })
+                            findings.append(
+                                {
+                                    "line": i,
+                                    "issue": "SEC-004: Unsafe pull_request_target with checkout",
+                                    "detail": (
+                                        "pull_request_target runs in the context of the base repo "
+                                        "with write permissions. Checking out untrusted PR code here "
+                                        "is a known privilege escalation vector."
+                                    ),
+                                    "rule_id": "SEC-004",
+                                    "severity": "high",
+                                }
+                            )
                             break
 
             # 5. continue-on-error: true on test/lint steps
@@ -763,18 +793,22 @@ class ToolExecutor:
                         step_name = step.get("name", "unnamed")
                         run_cmd = step.get("run", "")
                         # Only flag if it's a test or lint step
-                        if any(kw in str(run_cmd).lower() for kw in
-                               ("pytest", "ruff", "flake8", "eslint", "test", "lint")):
+                        if any(
+                            kw in str(run_cmd).lower()
+                            for kw in ("pytest", "ruff", "flake8", "eslint", "test", "lint")
+                        ):
                             ln = find_line("continue-on-error")
-                            findings.append({
-                                "line": ln,
-                                "issue": f"CI-003: continue-on-error:true on test/lint step '{step_name}'",
-                                "detail": (
-                                    "This masks test/lint failures — quality gates become ineffective."
-                                ),
-                                "rule_id": "CI-003",
-                                "severity": "high",
-                            })
+                            findings.append(
+                                {
+                                    "line": ln,
+                                    "issue": f"CI-003: continue-on-error:true on test/lint step '{step_name}'",
+                                    "detail": (
+                                        "This masks test/lint failures — quality gates become ineffective."
+                                    ),
+                                    "rule_id": "CI-003",
+                                    "severity": "high",
+                                }
+                            )
 
                     # Check for || true masking
                     run_cmd = step.get("run", "") or ""
@@ -782,13 +816,15 @@ class ToolExecutor:
                         kw in run_cmd.lower() for kw in ("test", "pytest", "lint", "ruff")
                     ):
                         ln = find_line("|| true")
-                        findings.append({
-                            "line": ln,
-                            "issue": "CI-003: '|| true' masks test/lint step failure",
-                            "detail": "Remove '|| true' to ensure CI fails on test/lint errors.",
-                            "rule_id": "CI-003",
-                            "severity": "high",
-                        })
+                        findings.append(
+                            {
+                                "line": ln,
+                                "issue": "CI-003: '|| true' masks test/lint step failure",
+                                "detail": "Remove '|| true' to ensure CI fails on test/lint errors.",
+                                "rule_id": "CI-003",
+                                "severity": "high",
+                            }
+                        )
 
             # 6. Check branch triggers
             on_block = wf_data.get("on", {}) or {}
@@ -809,26 +845,31 @@ class ToolExecutor:
                         has_pr_main = True
 
             if not (has_push_main or has_pr_main) and on_block:
-                findings.append({
-                    "line": find_line("on:") or 1,
-                    "issue": "CI-002: Workflow may not trigger on main branch push/PR",
-                    "detail": (
-                        "Verify that the workflow triggers on push and pull_request to 'main'."
-                    ),
-                    "rule_id": "CI-002",
-                    "severity": "medium",
-                })
+                findings.append(
+                    {
+                        "line": find_line("on:") or 1,
+                        "issue": "CI-002: Workflow may not trigger on main branch push/PR",
+                        "detail": (
+                            "Verify that the workflow triggers on push and pull_request to 'main'."
+                        ),
+                        "rule_id": "CI-002",
+                        "severity": "medium",
+                    }
+                )
 
             # 7. Check if tests/lint are actually run
             all_run_cmds: list[str] = []
             for job_data in jobs.values():
                 if not isinstance(job_data, dict):
                     continue
-                for step in (job_data.get("steps") or []):
+                for step in job_data.get("steps") or []:
                     if isinstance(step, dict) and step.get("run"):
                         all_run_cmds.append(str(step["run"]))
             has_test = any(
-                any(kw in cmd.lower() for kw in ("pytest", "unittest", "jest", "go test", "cargo test"))
+                any(
+                    kw in cmd.lower()
+                    for kw in ("pytest", "unittest", "jest", "go test", "cargo test")
+                )
                 for cmd in all_run_cmds
             )
             has_lint = any(
@@ -836,29 +877,35 @@ class ToolExecutor:
                 for cmd in all_run_cmds
             )
             if not has_test:
-                findings.append({
-                    "line": None,
-                    "issue": "CI-004: No test step found in workflow",
-                    "detail": "Add a step that runs pytest/jest/go test/etc.",
-                    "rule_id": "CI-004",
-                    "severity": "medium",
-                })
+                findings.append(
+                    {
+                        "line": None,
+                        "issue": "CI-004: No test step found in workflow",
+                        "detail": "Add a step that runs pytest/jest/go test/etc.",
+                        "rule_id": "CI-004",
+                        "severity": "medium",
+                    }
+                )
             if not has_lint:
-                findings.append({
-                    "line": None,
-                    "issue": "CI-004: No lint step found in workflow",
-                    "detail": "Add a linting step (ruff, flake8, eslint, etc.).",
-                    "rule_id": "CI-004",
-                    "severity": "medium",
-                })
+                findings.append(
+                    {
+                        "line": None,
+                        "issue": "CI-004: No lint step found in workflow",
+                        "detail": "Add a linting step (ruff, flake8, eslint, etc.).",
+                        "rule_id": "CI-004",
+                        "severity": "medium",
+                    }
+                )
 
             all_findings.extend(findings)
-            parsed_workflows.append({
-                "file": rel,
-                "triggers": list(on_block.keys()) if isinstance(on_block, dict) else [on_block],
-                "jobs": list(jobs.keys()),
-                "findings": findings,
-            })
+            parsed_workflows.append(
+                {
+                    "file": rel,
+                    "triggers": list(on_block.keys()) if isinstance(on_block, dict) else [on_block],
+                    "jobs": list(jobs.keys()),
+                    "findings": findings,
+                }
+            )
 
         return {
             "workflows_found": True,
@@ -891,7 +938,9 @@ class ToolExecutor:
         try:
             result = subprocess.run(
                 [
-                    sys.executable, "-m", "ruff",
+                    sys.executable,
+                    "-m",
+                    "ruff",
                     "check",
                     "--output-format=json",
                     "--no-cache",
@@ -924,7 +973,8 @@ class ToolExecutor:
 
         # Filter to high-signal issues (not just style nitpicks)
         HIGH_SIGNAL_CODES = {
-            "E711", "E712",  # comparison to None/True/False
+            "E711",
+            "E712",  # comparison to None/True/False
             "F401",  # unused imports
             "F811",  # redefined unused
             "F821",  # undefined name
@@ -932,7 +982,7 @@ class ToolExecutor:
             "B006",  # mutable default argument
             "B007",  # unused loop variable
             "B023",  # function in loop
-            "S",     # bandit security rules
+            "S",  # bandit security rules
             "E501",  # line too long (if severe)
         }
 
@@ -940,13 +990,16 @@ class ToolExecutor:
             code = issue.get("code", "")
             # Include security rules and high-signal bugs
             if code.startswith("S") or any(code.startswith(c) for c in HIGH_SIGNAL_CODES):
-                issues.append({
-                    "file": str(Path(issue.get("filename", "")).relative_to(self.root))
-                    if issue.get("filename") else None,
-                    "line": issue.get("location", {}).get("row"),
-                    "code": code,
-                    "message": issue.get("message", ""),
-                })
+                issues.append(
+                    {
+                        "file": str(Path(issue.get("filename", "")).relative_to(self.root))
+                        if issue.get("filename")
+                        else None,
+                        "line": issue.get("location", {}).get("row"),
+                        "code": code,
+                        "message": issue.get("message", ""),
+                    }
+                )
 
         return {
             "python_files_found": True,
@@ -988,9 +1041,7 @@ class ToolExecutor:
         test_files = list({str(f): f for f in test_files}.values())
 
         results["test_files_found"] = len(test_files)
-        results["test_file_paths"] = [
-            str(f.relative_to(self.root)) for f in test_files
-        ]
+        results["test_file_paths"] = [str(f.relative_to(self.root)) for f in test_files]
 
         if not test_files:
             results["verdict"] = "NO_TESTS"
@@ -1020,7 +1071,8 @@ class ToolExecutor:
                 continue
 
             test_funcs = [
-                node for node in ast.walk(tree)
+                node
+                for node in ast.walk(tree)
                 if isinstance(node, ast.FunctionDef) and node.name.startswith("test_")
             ]
 
@@ -1050,7 +1102,9 @@ class ToolExecutor:
                     real_test_count += 1
 
             if trivial_count == len(test_funcs):
-                trivial_files.append(f"{rel}: All {trivial_count} test(s) are trivial (assert True/pass)")
+                trivial_files.append(
+                    f"{rel}: All {trivial_count} test(s) are trivial (assert True/pass)"
+                )
 
         results["trivial_test_files"] = trivial_files
         results["real_test_count_estimate"] = real_test_count
@@ -1082,7 +1136,9 @@ class ToolExecutor:
             if "error" in collect_result.stderr.lower():
                 results["pytest_collect_stderr"] = collect_result.stderr[:500]
         except subprocess.TimeoutExpired:
-            results["pytest_collect_note"] = f"pytest --collect-only timed out after {TOOL_TIMEOUT}s"
+            results["pytest_collect_note"] = (
+                f"pytest --collect-only timed out after {TOOL_TIMEOUT}s"
+            )
         except Exception as exc:  # noqa: BLE001
             results["pytest_collect_note"] = f"Could not run pytest --collect-only: {exc}"
 

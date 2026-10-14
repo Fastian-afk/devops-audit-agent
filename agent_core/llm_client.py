@@ -55,13 +55,13 @@ class LLMClient:
             import google.genai as genai  # type: ignore[import]
             from google.genai import types as genai_types  # type: ignore[import]
         except ImportError as exc:
-            raise LLMError("google-genai package not installed. Run: pip install google-genai") from exc
+            raise LLMError(
+                "google-genai package not installed. Run: pip install google-genai"
+            ) from exc
 
         api_key = os.environ.get("GEMINI_API_KEY", "")
         if not api_key or api_key == "your_gemini_api_key_here":
-            raise LLMError(
-                "GEMINI_API_KEY is not set. Copy .env.example to .env and add your key."
-            )
+            raise LLMError("GEMINI_API_KEY is not set. Copy .env.example to .env and add your key.")
 
         self._genai = genai
         self._genai_types = genai_types
@@ -77,9 +77,7 @@ class LLMClient:
 
         api_key = os.environ.get("OPENAI_API_KEY", "")
         if not api_key or api_key == "your_openai_api_key_here":
-            raise LLMError(
-                "OPENAI_API_KEY is not set. Copy .env.example to .env and add your key."
-            )
+            raise LLMError("OPENAI_API_KEY is not set. Copy .env.example to .env and add your key.")
 
         self._openai = openai
         self._oa_client = openai.OpenAI(api_key=api_key)
@@ -118,7 +116,7 @@ class LLMClient:
                 raise  # non-retryable
             except Exception as exc:  # noqa: BLE001
                 last_exc = exc
-                wait = self.BACKOFF_BASE ** attempt
+                wait = self.BACKOFF_BASE**attempt
                 logger.warning(
                     "LLM call attempt %d/%d failed: %s — retrying in %.1fs",
                     attempt + 1,
@@ -128,7 +126,9 @@ class LLMClient:
                 )
                 time.sleep(wait)
 
-        raise LLMError(f"LLM call failed after {self.MAX_RETRIES} attempts: {last_exc}") from last_exc
+        raise LLMError(
+            f"LLM call failed after {self.MAX_RETRIES} attempts: {last_exc}"
+        ) from last_exc
 
     # ------------------------------------------------------------------
     # Gemini backend

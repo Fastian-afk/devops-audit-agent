@@ -40,8 +40,9 @@ _SECRET_PATTERNS: list[re.Pattern] = [
     # Slack tokens
     re.compile(r"xox[baprs]-[0-9A-Za-z\-]{10,}", re.MULTILINE),
     # PEM / private key blocks
-    re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END.*?-----",
-               re.DOTALL),
+    re.compile(
+        r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----.*?-----END.*?-----", re.DOTALL
+    ),
     # Connection strings / DSNs
     re.compile(
         r"(?:postgres|mysql|mongodb|redis)://[^:]+:[^@]+@[^\s\"']+",
@@ -205,7 +206,11 @@ def validate_and_clean(
                     # (the issue may still be valid, e.g., a missing file)
                     # Only discard if the rule implies file must exist for the finding
                     _file_must_exist_rules = {
-                        "SEC-001", "SEC-002", "QUAL-002", "QUAL-003", "QUAL-005",
+                        "SEC-001",
+                        "SEC-002",
+                        "QUAL-002",
+                        "QUAL-003",
+                        "QUAL-005",
                     }
                     if rule_id in _file_must_exist_rules:
                         continue  # hallucinated path — skip

@@ -115,17 +115,20 @@ class TestSchemaValidation:
 
 
 class TestCategoryInference:
-    @pytest.mark.parametrize("rule_id,expected_category", [
-        ("SEC-001", "security"),
-        ("HYG-003", "repository_hygiene"),
-        ("DEP-002", "dependency_management"),
-        ("QUAL-001", "code_quality"),
-        ("TEST-001", "testing"),
-        ("CI-003", "ci_cd"),
-        ("CFG-001", "configuration"),
-        ("COLLAB-001", "collaboration"),
-        ("BUILD-002", "build_and_release"),
-    ])
+    @pytest.mark.parametrize(
+        "rule_id,expected_category",
+        [
+            ("SEC-001", "security"),
+            ("HYG-003", "repository_hygiene"),
+            ("DEP-002", "dependency_management"),
+            ("QUAL-001", "code_quality"),
+            ("TEST-001", "testing"),
+            ("CI-003", "ci_cd"),
+            ("CFG-001", "configuration"),
+            ("COLLAB-001", "collaboration"),
+            ("BUILD-002", "build_and_release"),
+        ],
+    )
     def test_category_inferred_from_rule_id(self, rule_id: str, expected_category: str) -> None:
         v = _make_violation(rule_id=rule_id, category="wrong_category")
         report = _make_report([v])
@@ -279,24 +282,28 @@ class TestFalsePositivePrevention:
     def test_large_violation_set_validated(self) -> None:
         """Many diverse violations should all validate correctly."""
         violations = []
-        for i, (rule_id, cat, sev) in enumerate([
-            ("SEC-001", "security", "critical"),
-            ("HYG-003", "repository_hygiene", "high"),
-            ("DEP-001", "dependency_management", "high"),
-            ("QUAL-003", "code_quality", "medium"),
-            ("TEST-001", "testing", "high"),
-            ("CI-003", "ci_cd", "high"),
-            ("CFG-001", "configuration", "high"),
-            ("COLLAB-001", "collaboration", "medium"),
-            ("BUILD-002", "build_and_release", "high"),
-        ]):
-            violations.append(_make_violation(
-                rule_id=rule_id,
-                category=cat,
-                severity=sev,
-                file=None,
-                line=None,
-            ))
+        for i, (rule_id, cat, sev) in enumerate(
+            [
+                ("SEC-001", "security", "critical"),
+                ("HYG-003", "repository_hygiene", "high"),
+                ("DEP-001", "dependency_management", "high"),
+                ("QUAL-003", "code_quality", "medium"),
+                ("TEST-001", "testing", "high"),
+                ("CI-003", "ci_cd", "high"),
+                ("CFG-001", "configuration", "high"),
+                ("COLLAB-001", "collaboration", "medium"),
+                ("BUILD-002", "build_and_release", "high"),
+            ]
+        ):
+            violations.append(
+                _make_violation(
+                    rule_id=rule_id,
+                    category=cat,
+                    severity=sev,
+                    file=None,
+                    line=None,
+                )
+            )
 
         report = _make_report(violations)
         validated = validate_and_clean(report)

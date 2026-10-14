@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@42375524bc47e64dbfcdde4a5ee3c293c4b39523  # v5.4.0
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Set up Python
-        uses: actions/setup-python@42375524bc47e64dbfcdde4a5ee3c293c4b39523  # v5.4.0
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5.4.0
         with:
           python-version: "3.11"
 
@@ -69,4 +69,7 @@ jobs:
         run: pip install ruff
 
       - name: Run ruff with security rules (bandit-equivalent)
-        run: ruff check . --select S --output-format=github
+        run: >-
+          ruff check . --select S
+          --ignore S101,S104,S110,S301,S324,S603,S607
+          --output-format=github

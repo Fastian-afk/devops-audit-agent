@@ -21,11 +21,15 @@ def _git_init(path: Path) -> None:
     subprocess.run(["git", "init", "-b", "main", str(path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "config", "user.email", "test@example.com"],
-        cwd=str(path), check=True, capture_output=True,
+        cwd=str(path),
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "config", "user.name", "Test User"],
-        cwd=str(path), check=True, capture_output=True,
+        cwd=str(path),
+        check=True,
+        capture_output=True,
     )
 
 
@@ -34,7 +38,9 @@ def _git_commit(path: Path, message: str = "Initial commit") -> None:
     subprocess.run(["git", "add", "-A"], cwd=str(path), check=True, capture_output=True)
     subprocess.run(
         ["git", "commit", "-m", message],
-        cwd=str(path), check=True, capture_output=True,
+        cwd=str(path),
+        check=True,
+        capture_output=True,
     )
 
 
@@ -55,7 +61,8 @@ def repo_a(tmp_path_factory) -> Path:
     _git_init(root)
 
     # Hardcoded secret in source
-    (root / "app.py").write_text(textwrap.dedent("""\
+    (root / "app.py").write_text(
+        textwrap.dedent("""\
         import requests
 
         API_KEY = "sk-abc123def456ghi789jkl012mno345pqr678stu901"
@@ -63,24 +70,29 @@ def repo_a(tmp_path_factory) -> Path:
 
         def fetch_data():
             return requests.get("https://api.example.com", headers={"Authorization": API_KEY})
-    """))
+    """)
+    )
 
     # Unpinned dependency
     (root / "requirements.txt").write_text("requests\nflask\nnumpy\n")
 
     # Machine-specific path in config
-    (root / "config.py").write_text(textwrap.dedent("""\
+    (root / "config.py").write_text(
+        textwrap.dedent("""\
         DEBUG = True
         DATA_DIR = "/Users/johndoe/myproject/data"
         LOG_DIR = "C:\\Users\\johndoe\\logs"
-    """))
+    """)
+    )
 
     # .env file with real credentials (tracked!)
-    (root / ".env").write_text(textwrap.dedent("""\
+    (root / ".env").write_text(
+        textwrap.dedent("""\
         SECRET_KEY=my-very-secret-key-12345
         DATABASE_PASSWORD=hunter2
         AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-    """))
+    """)
+    )
 
     # No README, no .gitignore, no tests/, no .github/
 
@@ -112,7 +124,8 @@ def repo_b(tmp_path_factory) -> Path:
     (root / "requirements.txt").write_text("requests==2.32.3\nflask==3.1.0\npyyaml==6.0.2\n")
 
     # Source with subtle issues
-    (root / "utils.py").write_text(textwrap.dedent("""\
+    (root / "utils.py").write_text(
+        textwrap.dedent("""\
         import yaml
         import requests
 
@@ -122,24 +135,28 @@ def repo_b(tmp_path_factory) -> Path:
 
         def fetch_remote(url):
             return requests.get(url, verify=False)  # SSL disabled
-    """))
+    """)
+    )
 
     # Placeholder tests
     tests_dir = root / "tests"
     tests_dir.mkdir()
     (tests_dir / "__init__.py").write_text("")
-    (tests_dir / "test_utils.py").write_text(textwrap.dedent("""\
+    (tests_dir / "test_utils.py").write_text(
+        textwrap.dedent("""\
         def test_load_config():
             assert True  # TODO: implement real test
 
         def test_fetch_remote():
             pass  # placeholder
-    """))
+    """)
+    )
 
     # CI with subtle issues: unpinned action, continue-on-error on test
     gh_dir = root / ".github" / "workflows"
     gh_dir.mkdir(parents=True)
-    (gh_dir / "ci.yml").write_text(textwrap.dedent("""\
+    (gh_dir / "ci.yml").write_text(
+        textwrap.dedent("""\
         name: CI
 
         on:
@@ -162,7 +179,8 @@ def repo_b(tmp_path_factory) -> Path:
               - name: Run tests
                 continue-on-error: true
                 run: pytest tests/
-    """))
+    """)
+    )
 
     _git_commit(root, "Add CI and tests")
     return root
@@ -190,7 +208,8 @@ def repo_c(tmp_path_factory) -> Path:
     )
 
     # Good .gitignore
-    (root / ".gitignore").write_text(textwrap.dedent("""\
+    (root / ".gitignore").write_text(
+        textwrap.dedent("""\
         __pycache__/
         *.pyc
         .venv/
@@ -200,13 +219,15 @@ def repo_c(tmp_path_factory) -> Path:
         build/
         .pytest_cache/
         .ruff_cache/
-    """))
+    """)
+    )
 
     # Pinned requirements
     (root / "requirements.txt").write_text("requests==2.32.3\nflask==3.1.0\n")
 
     # pyproject.toml with ruff + pytest config (tests polyglot equivalence)
-    (root / "pyproject.toml").write_text(textwrap.dedent("""\
+    (root / "pyproject.toml").write_text(
+        textwrap.dedent("""\
         [project]
         name = "healthy-project"
         version = "1.0.0"
@@ -220,15 +241,15 @@ def repo_c(tmp_path_factory) -> Path:
 
         [tool.pytest.ini_options]
         testpaths = ["tests"]
-    """))
-
-    # .env.example
-    (root / ".env.example").write_text(
-        "API_KEY=your_api_key_here\nDEBUG=false\nDATABASE_URL=\n"
+    """)
     )
 
+    # .env.example
+    (root / ".env.example").write_text("API_KEY=your_api_key_here\nDEBUG=false\nDATABASE_URL=\n")
+
     # Clean source code
-    (root / "app.py").write_text(textwrap.dedent("""\
+    (root / "app.py").write_text(
+        textwrap.dedent("""\
         import os
         import requests
 
@@ -238,13 +259,15 @@ def repo_c(tmp_path_factory) -> Path:
             response = requests.get(url, timeout=30)
             response.raise_for_status()
             return response.json()
-    """))
+    """)
+    )
 
     # Real tests
     tests_dir = root / "tests"
     tests_dir.mkdir()
     (tests_dir / "__init__.py").write_text("")
-    (tests_dir / "test_app.py").write_text(textwrap.dedent("""\
+    (tests_dir / "test_app.py").write_text(
+        textwrap.dedent("""\
         import pytest
         from unittest.mock import patch, MagicMock
         import app
@@ -262,12 +285,14 @@ def repo_c(tmp_path_factory) -> Path:
             with patch("app.requests.get", return_value=mock_resp):
                 with pytest.raises(Exception):
                     app.fetch_data("https://api.example.com/bad")
-    """))
+    """)
+    )
 
     # Clean, hardened CI
     gh_dir = root / ".github" / "workflows"
     gh_dir.mkdir(parents=True)
-    (gh_dir / "ci.yml").write_text(textwrap.dedent("""\
+    (gh_dir / "ci.yml").write_text(
+        textwrap.dedent("""\
         name: CI
 
         on:
@@ -294,7 +319,8 @@ def repo_c(tmp_path_factory) -> Path:
                 run: ruff check .
               - name: Run tests
                 run: pytest tests/ -v
-    """))
+    """)
+    )
 
     _git_commit(root, "Initial healthy project")
     return root

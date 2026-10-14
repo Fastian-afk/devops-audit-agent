@@ -29,9 +29,7 @@ from tools import ToolExecutor, _scrub_line
 def simple_repo(tmp_path: Path) -> Path:
     """A minimal, clean repository for generic tool testing."""
     (tmp_path / "README.md").write_text("# Test Repo\n\nA simple test repository.\n")
-    (tmp_path / "app.py").write_text(
-        "def hello():\n    return 'Hello, World!'\n"
-    )
+    (tmp_path / "app.py").write_text("def hello():\n    return 'Hello, World!'\n")
     (tmp_path / ".gitignore").write_text("__pycache__/\n*.pyc\n.env\n")
     (tmp_path / ".env.example").write_text("API_KEY=your_key_here\n")
     tests_dir = tmp_path / "tests"
@@ -222,6 +220,7 @@ class TestSearchCode:
 class TestGitLog:
     def test_returns_commits(self, repo_a: Path) -> None:
         import git
+
         repo = git.Repo(repo_a)
         ex = ToolExecutor(repo_a, repo=repo)
         result = ex.git_log(max_commits=5)
@@ -230,6 +229,7 @@ class TestGitLog:
 
     def test_commit_has_required_fields(self, repo_a: Path) -> None:
         import git
+
         repo = git.Repo(repo_a)
         ex = ToolExecutor(repo_a, repo=repo)
         result = ex.git_log(max_commits=1)

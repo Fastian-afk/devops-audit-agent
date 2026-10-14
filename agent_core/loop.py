@@ -75,9 +75,7 @@ class AgentLoop:
         self.execute_tool = tool_executor
         self.repo_url = repo_url
         self.repo_root = repo_root
-        self.max_turns = max_turns or int(
-            os.environ.get("AGENT_MAX_TURNS", self.DEFAULT_MAX_TURNS)
-        )
+        self.max_turns = max_turns or int(os.environ.get("AGENT_MAX_TURNS", self.DEFAULT_MAX_TURNS))
         self.verbose = verbose
 
         # Conversation history in OpenAI-style format
@@ -134,10 +132,12 @@ class AgentLoop:
             except Exception as exc:  # noqa: BLE001
                 _trace("ERROR", f"LLM call failed on turn {self._turn}: {exc}", self.verbose)
                 # Add error to conversation so LLM can recover on next turn
-                self._messages.append({
-                    "role": "assistant",
-                    "content": f"[LLM error on turn {self._turn}: {exc}]",
-                })
+                self._messages.append(
+                    {
+                        "role": "assistant",
+                        "content": f"[LLM error on turn {self._turn}: {exc}]",
+                    }
+                )
                 continue
 
             # Record assistant response
@@ -147,13 +147,15 @@ class AgentLoop:
             if not tool_calls:
                 # LLM produced text but no tool call — prompt it to continue
                 self._messages.append({"role": "assistant", "content": text or ""})
-                self._messages.append({
-                    "role": "user",
-                    "content": (
-                        "Continue the investigation. Call another tool or, if your investigation "
-                        "is complete, call submit_final_report with your findings."
-                    ),
-                })
+                self._messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            "Continue the investigation. Call another tool or, if your investigation "
+                            "is complete, call submit_final_report with your findings."
+                        ),
+                    }
+                )
                 continue
 
             # ---- SELECT TOOL & EXECUTE ----
@@ -165,7 +167,11 @@ class AgentLoop:
                 tool_name = tc.get("name", "")
                 tool_args = tc.get("arguments", {})
 
-                _trace("SELECT TOOL", f"Tool: {tool_name} | Args: {json.dumps(tool_args)}", self.verbose)
+                _trace(
+                    "SELECT TOOL",
+                    f"Tool: {tool_name} | Args: {json.dumps(tool_args)}",
+                    self.verbose,
+                )
 
                 # Check for submit_final_report
                 if tool_name == "submit_final_report":
@@ -200,13 +206,15 @@ class AgentLoop:
 
             # Feed all tool results back as a user message
             combined = "\n\n".join(all_results)
-            self._messages.append({
-                "role": "user",
-                "content": (
-                    f"Tool execution results:\n\n{combined}\n\n"
-                    "Continue the investigation or call submit_final_report if complete."
-                ),
-            })
+            self._messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Tool execution results:\n\n{combined}\n\n"
+                        "Continue the investigation or call submit_final_report if complete."
+                    ),
+                }
+            )
 
         # Max turns reached — force report generation
         _trace(
@@ -260,14 +268,16 @@ class AgentLoop:
         Uses a simplified prompt to avoid additional turns.
         """
         # Build a summary of what we know so far from the conversation
-        self._messages.append({
-            "role": "user",
-            "content": (
-                "IMPORTANT: You have reached the maximum number of investigation turns. "
-                "You MUST now call submit_final_report immediately with all findings "
-                "gathered so far. Do not call any other tool. Call submit_final_report now."
-            ),
-        })
+        self._messages.append(
+            {
+                "role": "user",
+                "content": (
+                    "IMPORTANT: You have reached the maximum number of investigation turns. "
+                    "You MUST now call submit_final_report immediately with all findings "
+                    "gathered so far. Do not call any other tool. Call submit_final_report now."
+                ),
+            }
+        )
 
         try:
             _, tool_calls = self.llm.chat(

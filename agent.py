@@ -28,9 +28,7 @@ def _setup_logging(verbose: bool) -> None:
     """Configure structured logging to stderr."""
     level = logging.DEBUG if verbose else logging.WARNING
     handler = logging.StreamHandler(sys.stderr)
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-    )
+    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
     logging.basicConfig(level=level, handlers=[handler])
 
 
@@ -152,12 +150,12 @@ Environment variables (see .env.example):
                 "3. Run again"
             )
 
-    print(f"\n{'='*72}", file=sys.stderr)
+    print(f"\n{'=' * 72}", file=sys.stderr)
     print("  DevOps Repository Auditing Agent", file=sys.stderr)
     print(f"  Repository : {repo_url}", file=sys.stderr)
     print(f"  Provider   : {provider}", file=sys.stderr)
     print(f"  Output     : {output_path}", file=sys.stderr)
-    print(f"{'='*72}\n", file=sys.stderr)
+    print(f"{'=' * 72}\n", file=sys.stderr)
 
     # Import here so startup errors from missing .env are shown cleanly
     from agent_core.llm_client import LLMClient, LLMError
@@ -210,6 +208,7 @@ Environment variables (see .env.example):
         _fatal(f"Unexpected error: {exc}")
     finally:
         import contextlib
+
         with contextlib.suppress(Exception):
             repo_mgr.__exit__(None, None, None)
 
@@ -222,11 +221,11 @@ Environment variables (see .env.example):
         _fatal(f"Could not write output to {output_path}: {exc}")
 
     violation_count = len(report.get("violations", []))
-    print(f"\n{'='*72}", file=sys.stderr)
+    print(f"\n{'=' * 72}", file=sys.stderr)
     print("  Audit complete!", file=sys.stderr)
     print(f"  Violations found : {violation_count}", file=sys.stderr)
     print(f"  Report written to: {output_path}", file=sys.stderr)
-    print(f"{'='*72}\n", file=sys.stderr)
+    print(f"{'=' * 72}\n", file=sys.stderr)
 
     sys.exit(0)
 
