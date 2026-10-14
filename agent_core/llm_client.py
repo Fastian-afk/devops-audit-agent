@@ -280,11 +280,15 @@ class LLMClient:
         messages: list[dict[str, Any]],
         tools: list[dict[str, Any]] | None,
     ) -> tuple[str, list[dict[str, Any]]]:
+        request_messages = messages
+        if self.provider == "groq":
+            request_messages = self._compact_groq_messages(messages)
+
         kwargs: dict[str, Any] = {
             "model": self.model,
-            "messages": messages,
+            "messages": request_messages,
             "temperature": 0.1,
-            "max_tokens": 4096 if self.provider == "groq" else 8192,
+            "max_tokens": 2048 if self.provider == "groq" else 8192,
         }
         if tools:
             kwargs["tools"] = tools
@@ -306,3 +310,31 @@ class LLMClient:
                 tool_calls.append({"name": tc.function.name, "arguments": args})
 
         return text, tool_calls
+
+    @staticmethod
+    def _compact_groq_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Keep Groq requests below the free-tier context/token-per-minute limit."""
+        if not messages:
+            return messages
+
+        system_message = messages[0] if messages[0].get("role") == "system" else None
+        recent = messages[1:] if system_message else messages
+        compacted: list[dict[str, Any]] = []
+        if system_message:
+            compacted.append(system_message)
+
+        remaining_chars = (
+            14_000 - len(system_message.get("content", "")) if system_message else 14_000
+        )
+        for message in reversed(recent):
+            content = message.get("content", "")
+            if not isinstance(content, str):
+                content = str(content)
+            if remaining_chars <= 0:
+                break
+            if len(content) > remaining_chars:
+                content = content[-remaining_chars:]
+            compacted.insert(1 if system_message else 0, {**message, "content": content})
+            remaining_chars -= len(content)
+
+        return compacted
