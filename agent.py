@@ -61,9 +61,10 @@ Examples:
   python agent.py --repo https://github.com/owner/repo --output report.json --verbose
 
 Environment variables (see .env.example):
-  PROVIDER          gemini (default) or openai
+  PROVIDER          gemini (default), openai, or groq
   GEMINI_API_KEY    Required when PROVIDER=gemini
   OPENAI_API_KEY    Required when PROVIDER=openai
+  GROQ_API_KEY      Required when PROVIDER=groq
   AGENT_MAX_TURNS   Override maximum reasoning turns (default: 18)
         """,
     )
@@ -81,7 +82,7 @@ Environment variables (see .env.example):
     )
     parser.add_argument(
         "--provider",
-        choices=["gemini", "openai"],
+        choices=["gemini", "openai", "groq"],
         default=None,
         help="LLM provider to use (overrides PROVIDER env var)",
     )
@@ -147,6 +148,15 @@ Environment variables (see .env.example):
                 "OPENAI_API_KEY is not configured.\n"
                 "1. Copy .env.example to .env\n"
                 "2. Add your OpenAI API key (https://platform.openai.com/api-keys)\n"
+                "3. Run again"
+            )
+    elif provider == "groq":
+        key = os.environ.get("GROQ_API_KEY", "")
+        if not key or key == "your_groq_api_key_here":
+            _fatal(
+                "GROQ_API_KEY is not configured.\n"
+                "1. Copy .env.example to .env\n"
+                "2. Add your Groq API key (https://console.groq.com/keys)\n"
                 "3. Run again"
             )
 

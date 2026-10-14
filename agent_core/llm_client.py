@@ -1,7 +1,7 @@
 """
 agent_core/llm_client.py — Provider-agnostic LLM SDK wrapper.
 
-Supports both Google Gemini and OpenAI with:
+Supports Google Gemini, OpenAI, and Groq with:
 - Automatic provider selection via PROVIDER env var
 - Exponential backoff retries on transient errors
 - Configurable timeouts
@@ -27,7 +27,7 @@ class LLMError(Exception):
 
 class LLMClient:
     """
-    Provider-agnostic wrapper around Gemini and OpenAI SDKs.
+    Provider-agnostic wrapper around Gemini, OpenAI, and Groq SDKs.
 
     Usage:
         client = LLMClient()                     # reads PROVIDER from env
@@ -39,11 +39,15 @@ class LLMClient:
 
     def __init__(self, provider: str | None = None) -> None:
         self.provider = (provider or os.environ.get("PROVIDER", "gemini")).lower().strip()
-        if self.provider not in ("gemini", "openai"):
-            raise LLMError(f"Unsupported PROVIDER '{self.provider}'. Choose 'gemini' or 'openai'.")
+        if self.provider not in ("gemini", "openai", "groq"):
+            raise LLMError(
+                f"Unsupported PROVIDER '{self.provider}'. Choose 'gemini', 'openai', or 'groq'."
+            )
 
         if self.provider == "gemini":
             self._init_gemini()
+        elif self.provider == "groq":
+            self._init_groq()
         else:
             self._init_openai()
 
@@ -84,6 +88,24 @@ class LLMClient:
         self._oa_client = openai.OpenAI(api_key=api_key)
         self.model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
         logger.info("LLMClient initialised — provider=openai, model=%s", self.model)
+
+    def _init_groq(self) -> None:
+        try:
+            import openai  # type: ignore[import]
+        except ImportError as exc:
+            raise LLMError("openai package not installed. Run: pip install openai") from exc
+
+        api_key = os.environ.get("GROQ_API_KEY", "")
+        if not api_key or api_key == "your_groq_api_key_here":
+            raise LLMError("GROQ_API_KEY is not set. Add your Groq API key to .env.")
+
+        self._openai = openai
+        self._oa_client = openai.OpenAI(
+            api_key=api_key,
+            base_url="https://api.groq.com/openai/v1",
+        )
+        self.model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+        logger.info("LLMClient initialised — provider=groq, model=%s", self.model)
 
     # ------------------------------------------------------------------
     # Public interface

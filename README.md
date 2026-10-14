@@ -14,7 +14,7 @@
 This project implements a **production-grade Autonomous DevOps Repository Auditing Agent** as both a university assignment deliverable and a flagship portfolio/CV project. The agent:
 
 - Clones any public GitHub repository into an **isolated sandbox**
-- Executes a genuine **multi-turn Observe → Reason → Select Tool → Execute → Interpret → Report** reasoning loop powered by Google Gemini or OpenAI
+- Executes a genuine **multi-turn Observe → Reason → Select Tool → Execute → Interpret → Report** reasoning loop powered by Google Gemini, OpenAI, or Groq
 - Dynamically inspects repositories across **9 DevOps audit categories** with 40+ specific rule IDs
 - Produces a **structured, schema-validated JSON report** with zero credential leakage
 - Is built **without any agent framework** (no LangChain, LangGraph, CrewAI, AutoGen, n8n, etc.) — the entire reasoning loop is hand-crafted in pure Python
@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 # 4. Configure your API credentials
 cp .env.example .env
-# Open .env in your editor and set GEMINI_API_KEY (or OPENAI_API_KEY + PROVIDER=openai)
+# Open .env in your editor and set GEMINI_API_KEY (or OPENAI_API_KEY/GROQ_API_KEY with the matching PROVIDER)
 
 # 5. Run the agent against any public GitHub repository
 python agent.py --repo https://github.com/owner/repo-name --output report.json
@@ -81,6 +81,15 @@ cat report.json
 PROVIDER=openai
 OPENAI_API_KEY=sk-...your-key...
 OPENAI_MODEL=gpt-4o-mini   # or gpt-4o for higher accuracy
+```
+
+### Using Groq Instead of Gemini
+
+```bash
+# In your .env file:
+PROVIDER=groq
+GROQ_API_KEY=gsk_...your-key...
+GROQ_MODEL=llama-3.3-70b-versatile
 ```
 
 ### Advanced Options
