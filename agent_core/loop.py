@@ -134,8 +134,12 @@ class AgentLoop:
                 # Add error to conversation so LLM can recover on next turn
                 self._messages.append(
                     {
-                        "role": "assistant",
-                        "content": f"[LLM error on turn {self._turn}: {exc}]",
+                        "role": "user",
+                        "content": (
+                            f"The previous model request failed on turn {self._turn}. "
+                            "Continue the investigation from the existing evidence and call a "
+                            "tool or submit the final report."
+                        ),
                     }
                 )
                 continue

@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from agent_core.llm_client import LLMClient
 from agent_core.loop import AgentLoop
 
 # ============================================================
@@ -58,6 +59,30 @@ def _make_tool_call(tool_name: str, args: dict | None = None) -> tuple[str, list
         f"Calling {tool_name}...",
         [{"name": tool_name, "arguments": args or {}}],
     )
+
+
+def test_gemini_schema_normalizes_nullable_union_types() -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "file": {"type": ["string", "null"]},
+            "line": {"type": ["integer", "null"]},
+            "violations": {
+                "type": "array",
+                "items": {"type": ["object", "null"], "properties": {}},
+            },
+        },
+    }
+
+    converted = LLMClient._openai_params_to_gemini(schema)
+
+    assert converted["properties"]["file"] == {"type": "string", "nullable": True}
+    assert converted["properties"]["line"] == {"type": "integer", "nullable": True}
+    assert converted["properties"]["violations"]["items"] == {
+        "type": "object",
+        "nullable": True,
+        "properties": {},
+    }
 
 
 # ============================================================

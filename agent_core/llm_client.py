@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import time
+from copy import deepcopy
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ class LLMClient:
         self._genai = genai
         self._genai_types = genai_types
         self._client = genai.Client(api_key=api_key)
-        self.model = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+        self.model = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
         logger.info("LLMClient initialised — provider=gemini, model=%s", self.model)
 
     def _init_openai(self) -> None:
@@ -191,12 +192,13 @@ class LLMClient:
         config_kwargs: dict[str, Any] = {"temperature": 0.1, "max_output_tokens": 8192}
         if system_instruction:
             config_kwargs["system_instruction"] = system_instruction
+        if gemini_tools:
+            config_kwargs["tools"] = gemini_tools
 
         response = self._client.models.generate_content(
             model=self.model,
             contents=contents,
             config=types.GenerateContentConfig(**config_kwargs),
-            tools=gemini_tools,
         )
 
         text_parts: list[str] = []
@@ -222,7 +224,30 @@ class LLMClient:
         """Convert OpenAI JSON Schema parameters to Gemini Schema format."""
         if not params:
             return {"type": "object", "properties": {}}
-        return params
+
+        converted = deepcopy(params)
+
+        def normalize_schema(schema: dict[str, Any]) -> dict[str, Any]:
+            schema_type = schema.get("type")
+            if isinstance(schema_type, list):
+                non_null_types = [item for item in schema_type if item != "null"]
+                schema["type"] = non_null_types[0] if non_null_types else "string"
+                if "null" in schema_type:
+                    schema["nullable"] = True
+
+            properties = schema.get("properties")
+            if isinstance(properties, dict):
+                for property_schema in properties.values():
+                    if isinstance(property_schema, dict):
+                        normalize_schema(property_schema)
+
+            items = schema.get("items")
+            if isinstance(items, dict):
+                normalize_schema(items)
+
+            return schema
+
+        return normalize_schema(converted)
 
     # ------------------------------------------------------------------
     # OpenAI backend
