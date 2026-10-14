@@ -1,0 +1,175 @@
+# ============================================================
+# Python
+# ============================================================
+# Assignment / local documents
+*.pdf
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+.installed.cfg
+lib/
+lib64/
+MANIFEST
+.Python
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Distribution / packaging
+*.tar.gz
+*.whl
+
+# ============================================================
+# Testing & Coverage
+# ============================================================
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+pytest.ini  # handled in pyproject.toml
+
+# ============================================================
+# Type Checking
+# ============================================================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ============================================================
+# Linting / Formatting
+# ============================================================
+.ruff_cache/
+
+# ============================================================
+# Secrets & Credentials — NEVER commit these
+# ============================================================
+*.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+secrets.json
+credentials.json
+service_account*.json
+*_secret*
+*_credentials*
+
+# ============================================================
+# Databases & Local Storage
+# ============================================================
+*.sqlite3
+*.sqlite
+*.db
+*.sql
+
+# ============================================================
+# Logs & Temp Files
+# ============================================================
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.temp/
+tmp/
+
+# ============================================================
+# OS-generated files
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# IDE & Editor configs
+# ============================================================
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+.factorypath
+nbproject/
+*.komodoproject
+
+# ============================================================
+# Node.js (if any tooling uses it)
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+yarn.lock
+
+# ============================================================
+# Docker
+# ============================================================
+.docker/
+
+# ============================================================
+# Agent output files (generated at runtime)
+# ============================================================
+report.json
+self_audit.json
+audit_*.json
+*.report.json
+cloned_repos/
+.agent_tmp/
+
+# ============================================================
+# Jupyter Notebooks checkpoints
+# ============================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================================
+# Build artifacts
+# ============================================================
+*.pyc
+*.pyo
+target/
+out/
+bin/
+obj/

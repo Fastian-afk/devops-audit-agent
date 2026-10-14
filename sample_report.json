@@ -1,0 +1,95 @@
+{
+  "repository": "https://github.com/example/demo-project",
+  "violations": [
+    {
+      "rule_id": "SEC-001",
+      "category": "security",
+      "severity": "critical",
+      "file": "config.py",
+      "line": 3,
+      "description": "Hardcoded API credential assigned directly in source code",
+      "evidence": "Variable 'API_KEY' contains a value matching high-entropy token pattern — value [REDACTED_SECRET_DETECTED]",
+      "recommendation": "Remove the hardcoded value, add the variable name to .env.example, and load the secret at runtime via os.environ.get('API_KEY'). Consider using a secrets manager for production."
+    },
+    {
+      "rule_id": "SEC-001",
+      "category": "security",
+      "severity": "critical",
+      "file": "config.py",
+      "line": 4,
+      "description": "Hardcoded database connection string with embedded password",
+      "evidence": "DATABASE_URL contains credentials — value [REDACTED_SECRET_DETECTED]",
+      "recommendation": "Move DATABASE_URL to an environment variable. Never commit connection strings with passwords."
+    },
+    {
+      "rule_id": "HYG-002",
+      "category": "repository_hygiene",
+      "severity": "medium",
+      "file": null,
+      "line": null,
+      "description": "No .gitignore file found in repository",
+      "evidence": "list_files() found no .gitignore at repository root or any subdirectory",
+      "recommendation": "Add a comprehensive .gitignore. Use gitignore.io or GitHub's templates for your language/framework."
+    },
+    {
+      "rule_id": "HYG-004",
+      "category": "repository_hygiene",
+      "severity": "high",
+      "file": ".env",
+      "line": null,
+      "description": ".env file is tracked in git and contains real credentials",
+      "evidence": "git ls-files shows '.env' is tracked. File contains SECRET_KEY, DATABASE_PASSWORD, and AWS_ACCESS_KEY_ID assignments.",
+      "recommendation": "Run 'git rm --cached .env', add '.env' to .gitignore, and rotate all exposed credentials immediately. Use git-filter-repo to purge from history."
+    },
+    {
+      "rule_id": "DEP-001",
+      "category": "dependency_management",
+      "severity": "high",
+      "file": "requirements.txt",
+      "line": 1,
+      "description": "Unpinned dependencies without version constraints",
+      "evidence": "requirements.txt lists 'requests', 'flask', 'numpy' without version pins — e.g., '1: requests'",
+      "recommendation": "Pin all dependencies to exact versions (e.g., 'requests==2.32.3'). Run 'pip freeze > requirements.txt' after testing to capture current state."
+    },
+    {
+      "rule_id": "TEST-001",
+      "category": "testing",
+      "severity": "high",
+      "file": null,
+      "line": null,
+      "description": "No test files found anywhere in the repository",
+      "evidence": "Searched for test_*.py, *_test.py, tests/ — none found",
+      "recommendation": "Create a tests/ directory and add pytest tests. Aim for meaningful coverage of core business logic."
+    },
+    {
+      "rule_id": "CI-001",
+      "category": "ci_cd",
+      "severity": "high",
+      "file": null,
+      "line": null,
+      "description": "No CI/CD configuration found",
+      "evidence": "No .github/workflows/, .gitlab-ci.yml, Jenkinsfile, or .circleci/ found",
+      "recommendation": "Add a GitHub Actions workflow (.github/workflows/ci.yml) that runs lint and tests on every push and pull request."
+    },
+    {
+      "rule_id": "CFG-001",
+      "category": "configuration",
+      "severity": "high",
+      "file": "config.py",
+      "line": 5,
+      "description": "Machine-specific absolute path hardcoded in configuration",
+      "evidence": "DATA_DIR = '/Users/johndoe/myproject/data' — Unix absolute path with username",
+      "recommendation": "Use relative paths or environment variables for filesystem paths. This breaks on any other machine or CI environment."
+    },
+    {
+      "rule_id": "CFG-003",
+      "category": "configuration",
+      "severity": "medium",
+      "file": "config.py",
+      "line": 4,
+      "description": "DEBUG=True hardcoded in configuration file",
+      "evidence": "Line 4: 'DEBUG = True' — debug mode left enabled in committed config",
+      "recommendation": "Set DEBUG via environment variable: DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'"
+    }
+  ]
+}

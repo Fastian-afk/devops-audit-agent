@@ -1,0 +1,28 @@
+# Core LLM providers (provider-agnostic via PROVIDER env var)
+google-genai>=1.16.0
+openai==1.59.9
+
+# Environment & configuration
+python-dotenv==1.0.1
+
+# JSON schema validation
+jsonschema==4.23.0
+
+# Linting tool (run against audited repos)
+ruff>=0.9.0
+
+# Git operations
+gitpython==3.1.44
+
+# YAML parsing (for GitHub Actions workflow inspection)
+pyyaml>=6.0.1
+
+# HTTP requests (repo reachability check)
+requests==2.32.3
+
+# ============================================================
+# Development / Testing (install with: pip install -r requirements.txt)
+# ============================================================
+pytest==8.3.5
+pytest-cov==6.0.0
+pytest-timeout==2.3.1
