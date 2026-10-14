@@ -284,7 +284,7 @@ class LLMClient:
             "model": self.model,
             "messages": messages,
             "temperature": 0.1,
-            "max_tokens": 8192,
+            "max_tokens": 4096 if self.provider == "groq" else 8192,
         }
         if tools:
             kwargs["tools"] = tools
