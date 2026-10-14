@@ -89,7 +89,7 @@ OPENAI_MODEL=gpt-4o-mini   # or gpt-4o for higher accuracy
 # In your .env file:
 PROVIDER=groq
 GROQ_API_KEY=gsk_...your-key...
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=openai/gpt-oss-120b
 ```
 
 ### Advanced Options

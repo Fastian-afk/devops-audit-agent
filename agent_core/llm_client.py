@@ -104,7 +104,7 @@ class LLMClient:
             api_key=api_key,
             base_url="https://api.groq.com/openai/v1",
         )
-        self.model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.model = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
         logger.info("LLMClient initialised — provider=groq, model=%s", self.model)
 
     # ------------------------------------------------------------------
